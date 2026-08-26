@@ -9,7 +9,8 @@ from .serializers import (
     ProductDetailSerializer,
     ProductListSerializer,
     ReviewDetailSerializer,
-    ReviewListSerializer
+    ReviewListSerializer,
+    ProductReviewListSerializer
 )
 
 @api_view(['GET'])
@@ -24,7 +25,7 @@ def category_detail_api_view(request, id):
 
 @api_view(['GET'])
 def category_list_api_view(request):
-    categories = Category.objects.all()
+    categories = Category.objects.prefetch_related('products').all()
     list_ = CategoryListSerializer(categories, many=True).data
 
     return Response(data=list_)
@@ -44,6 +45,13 @@ def product_detail_api_view(request, id):
 def product_list_api_view(request):
     products = Product.objects.all()
     list_ = ProductListSerializer(products, many=True).data
+
+    return Response(data=list_)
+
+@api_view(['GET'])
+def product_review_list_api_view(request):
+    products = Product.objects.prefetch_related('reviews').all()
+    list_ = ProductReviewListSerializer(products, many=True).data
 
     return Response(data=list_)
 

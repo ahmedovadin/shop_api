@@ -9,7 +9,7 @@ class CategoryDetailSerializer(serializers.ModelSerializer):
 class CategoryListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = 'name products_count'.split()
 
 class ProductDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,6 +20,19 @@ class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = 'id title price category'.split()
+
+class ProductReviewListSerializer(serializers.ModelSerializer):
+    reviews = serializers.SerializerMethodField()
+    rating = serializers.SerializerMethodField()
+    class Meta:
+        model = Product
+        fields = 'id title price category reviews rating'.split()
+
+    def get_reviews(self, product):
+        return product.review_list()
+
+    def get_rating(self, product):
+            return product.rating()
 
 
 class ReviewDetailSerializer(serializers.ModelSerializer):
