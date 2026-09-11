@@ -15,6 +15,58 @@ from .serializers import (
     CategoryValidator,
     ReviewValidator
 )
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.viewsets import ModelViewSet
+
+class CustomPagination(PageNumberPagination):
+    page_size = 5
+
+    def get_paginated_response(self, data):
+        return Response({
+            'total': self.page.paginator.count,
+            'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'results': data,
+        })
+
+class CategoryListAPIView(ListCreateAPIView):
+    queryset = Category.objects.prefetch_related('products').all()
+    serializer_class = CategoryListSerializer
+    pagination_class = CustomPagination
+
+class CategoryDetailAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategoryDetailSerializer
+    lookup_field = 'id'
+
+class ProductViewSet(ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductDetailSerializer
+    pagination_class = CustomPagination
+    lookup_field = 'id'
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ProductListSerializer
+        return self.serializer_class
+
+class ReviewListAPIView(ListCreateAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewListSerializer
+    pagination_class = CustomPagination
+
+
+class ReviewDetailAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewDetailSerializer
+    lookup_field = 'id'
+
+class ProductReviewListAPIView(ListAPIView):
+    queryset = Product.objects.prefetch_related('reviews').all()
+    serializer_class = ProductReviewListSerializer
+    pagination_class = CustomPagination
+    
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def category_detail_api_view(request, id):

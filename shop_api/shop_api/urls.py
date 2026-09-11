@@ -17,15 +17,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from product import views
+from product.constants import LIST_CREATE, RETRIEVE_UPDATE_DESTROY
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/users/', include('users.urls')),
-    path('api/v1/categories/', views.category_list_create_api_view),
-    path('api/v1/categories/<int:id>/', views.category_detail_api_view),
-    path('api/v1/products/', views.product_list_create_api_view),
-    path('api/v1/products/<int:id>/', views.product_detail_api_view),
-    path('api/v1/reviews/', views.review_list_create_api_view),
-    path('api/v1/reviews/<int:id>/', views.review_detail_api_view),
-    path('api/v1/products/reviews', views.product_review_list_api_view),
+    path('api/v1/categories/', views.CategoryListAPIView.as_view()),
+    path('api/v1/categories/<int:id>/', views.CategoryDetailAPIView.as_view()),
+    path('api/v1/products/', views.ProductViewSet.as_view(LIST_CREATE)),
+    path('api/v1/products/<int:id>/', views.ProductViewSet.as_view(RETRIEVE_UPDATE_DESTROY)),
+    path('api/v1/reviews/', views.ReviewListAPIView.as_view()),
+    path('api/v1/reviews/<int:id>/', views.ReviewDetailAPIView.as_view()),
+    path('api/v1/products/reviews', views.ProductReviewListAPIView.as_view()),
 ]
