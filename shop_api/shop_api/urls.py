@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from . import swagger
 from product import views
 from product.constants import LIST_CREATE, RETRIEVE_UPDATE_DESTROY
 
@@ -30,3 +31,5 @@ urlpatterns = [
     path('api/v1/reviews/<int:id>/', views.ReviewDetailAPIView.as_view()),
     path('api/v1/products/reviews', views.ProductReviewListAPIView.as_view()),
 ]
+
+urlpatterns += swagger.urlpatterns
