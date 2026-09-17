@@ -1,0 +1,18 @@
+version: "3"
+services:
+  shop_api:
+    build:
+      context: .
+    command: sh -c "python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8001:8000"
+  shop_data:
+    image: "postgres:14"
+    environment:
+      POSTGRES_DB: your_database_name
+      POSTGRES_USER: your_database_user
+      POSTGRES_PASSWORD: your_database_password
+    volumes:
+      - "data:/var/lib/postgresql/data"
+volumes:
+  data:
