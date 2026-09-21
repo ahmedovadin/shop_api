@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'users',
     'rest_framework.authtoken',
     'drf_yasg',
+    'phonenumber_field',
 ]
 
 MIDDLEWARE = [
@@ -167,3 +168,4 @@ MAILERS = {
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+PHONENUMBER_DEFAULT_REGION = 'KG'
