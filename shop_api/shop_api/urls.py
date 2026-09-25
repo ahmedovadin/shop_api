@@ -18,15 +18,14 @@ from django.contrib import admin
 from django.urls import path, include
 from . import swagger
 from product import views
-from product.constants import LIST_CREATE, RETRIEVE_UPDATE_DESTROY
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/users/', include('users.urls')),
     path('api/v1/categories/', views.CategoryListAPIView.as_view()),
     path('api/v1/categories/<int:id>/', views.CategoryDetailAPIView.as_view()),
-    path('api/v1/products/', views.ProductViewSet.as_view(LIST_CREATE)),
-    path('api/v1/products/<int:id>/', views.ProductViewSet.as_view(RETRIEVE_UPDATE_DESTROY)),
+    path('api/v1/products/', views.ProductListCreateAPIView.as_view()),
+    path('api/v1/products/<int:id>/', views.ProductDetailAPIView.as_view()),
     path('api/v1/reviews/', views.ReviewListAPIView.as_view()),
     path('api/v1/reviews/<int:id>/', views.ReviewDetailAPIView.as_view()),
     path('api/v1/products/reviews', views.ProductReviewListAPIView.as_view()),

@@ -46,6 +46,11 @@ class ReviewListSerializer(serializers.ModelSerializer):
         model = Review
         fields = '__all__'
 
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = '__all__'
+
 class CategoryValidator(serializers.Serializer):
     name = serializers.CharField(required=True, max_length=255, min_length=1)
 
@@ -73,3 +78,15 @@ class ReviewValidator(serializers.Serializer):
         except Product.DoesNotExist:
             raise ValidationError('Product does not exist!')
         return product_id
+
+class ProductValidateSerializer(serializers.Serializer):
+    title = serializers.CharField(required=True, min_length=2, max_length=255)
+    description = serializers.CharField(required=False, allow_blank=True)
+    price = serializers.FloatField(min_value=0.01)
+    category = serializers.IntegerField(min_value=1)
+
+    def validate_category(self, category_id):
+        try:
+            return Category.objects.get(id=category_id)
+        except Category.DoesNotExist:
+            raise ValidationError('Category does not exist')

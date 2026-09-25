@@ -1,6 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+
+from common.permissions import IsAuth, IsAnon, CanEditWithIn15Minutes
 from .models import Category, Product, Review
 from django.forms import model_to_dict
 from .serializers import (
@@ -8,9 +10,11 @@ from .serializers import (
     CategoryDetailSerializer,
     ProductDetailSerializer,
     ProductListSerializer,
+    ProductSerializer,
     ReviewDetailSerializer,
     ReviewListSerializer,
     ProductReviewListSerializer,
+    ProductValidateSerializer,
     ProductValidator,
     CategoryValidator,
     ReviewValidator
@@ -40,16 +44,52 @@ class CategoryDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = CategoryDetailSerializer
     lookup_field = 'id'
 
-class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.all()
-    serializer_class = ProductDetailSerializer
+class ProductListCreateAPIView(ListCreateAPIView):
+    queryset = Product.objects.select_related('category').all()
+    serializer_class = ProductSerializer
     pagination_class = CustomPagination
-    lookup_field = 'id'
+    permission_classes = [IsAuth | IsAnon]
 
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return ProductListSerializer
-        return self.serializer_class
+    def post(self, request, *args, **kwargs):
+        serializer = ProductValidateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Get validated data
+        title = serializer.validated_data.get('title')
+        description = serializer.validated_data.get('description')
+        price = serializer.validated_data.get('price')
+        category = serializer.validated_data.get('category')
+
+        # Create product
+        product = Product.objects.create(
+            title=title,
+            description=description,
+            price=price,
+            category=category
+        )
+
+        return Response(data=ProductSerializer(product).data,
+                        status=status.HTTP_201_CREATED)
+
+class ProductDetailAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.select_related('category').all()
+    serializer_class = ProductSerializer
+    lookup_field = 'id'
+    permission_classes = [(IsAuth & CanEditWithIn15Minutes) | IsAnon]
+
+    def put(self, request, *args, **kwargs):
+        product = self.get_object()
+        serializer = ProductValidateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        product.title = serializer.validated_data.get('title')
+        product.description = serializer.validated_data.get('description')
+        product.price = serializer.validated_data.get('price')
+        product.category = serializer.validated_data.get('category')
+        product.save()
+
+        return Response(data=ProductSerializer(product).data)
+
 
 class ReviewListAPIView(ListCreateAPIView):
     queryset = Review.objects.all()
