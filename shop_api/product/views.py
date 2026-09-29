@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from common.permissions import IsAuth, IsAnon, CanEditWithIn15Minutes, IsModerator
+from common.validators import validate_user_age
 from .models import Category, Product, Review
 from django.forms import model_to_dict
 from .serializers import (
@@ -53,6 +54,7 @@ class ProductListCreateAPIView(ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         email = request.auth.get("email")
         print("@" * 30, email)
+        validate_user_age(request)
 
         serializer = ProductValidateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -69,7 +71,7 @@ class ProductListCreateAPIView(ListCreateAPIView):
             description=description,
             price=price,
             category=category,
-            owner=request.auth.get("user_id")
+            owner_id=request.auth.get("user_id")
         )
 
         return Response(data=ProductSerializer(product).data,

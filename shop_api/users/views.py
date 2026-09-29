@@ -62,12 +62,14 @@ class RegistrationAPIView(CreateAPIView):
         email = serializer.validated_data['email']
         password = serializer.validated_data['password']
         phone_number = serializer.validated_data.get('phone_number')
+        birth_date = serializer.validated_data.get('birth_date')
 
         user = CustomUser.objects.create_user(
             email=email,
             password=password,
             phone_number=phone_number,
-            is_active=False
+            is_active=False,
+            birthdate=birth_date,
         )
 
         code = generate_code()

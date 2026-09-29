@@ -8,6 +8,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     phone_number = PhoneNumberField(blank=True, null=True, region='KG')
+    birthdate = models.DateField(blank=True, null=True)
 
     objects = CustomUserManager()
 
