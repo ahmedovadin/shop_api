@@ -1,7 +1,8 @@
 from .serializers import (
     UserRegisterSerializer, 
-    ConfirmSerializer,
-    AuthValidateSerializer
+    AuthValidateSerializer,
+    ConfirmationSerializer,
+    CustomTokenObtainPairSerializer,
 )
 from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
@@ -13,6 +14,13 @@ from django.contrib.auth import authenticate
 import random
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
+
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 from users.models import ConfirmationCode, CustomUser
 
@@ -73,8 +81,8 @@ class RegistrationAPIView(CreateAPIView):
             }
         )
 
-class ConfirmAPIView(CreateAPIView):
-    serializer_class = ConfirmSerializer
+class ConfirmUserAPIView(CreateAPIView):
+    serializer_class = ConfirmationSerializer
 
     permission_classes = [AllowAny]
 
@@ -144,12 +152,9 @@ def registration_api_view(request):
     })
 
 
-from users.serializers import UserRegisterSerializer, ConfirmSerializer
-
-
 @api_view(['POST'])
 def confirm_api_view(request):
-    serializer = ConfirmSerializer(data=request.data)
+    serializer = ConfirmationSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     
     code = serializer.validated_data['code']
