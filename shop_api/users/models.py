@@ -5,10 +5,23 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
+    first_name = models.CharField(max_length=150, blank=True)
+    last_name = models.CharField(max_length=150, blank=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     phone_number = PhoneNumberField(blank=True, null=True, region='KG')
     birthdate = models.DateField(blank=True, null=True)
+    last_login = models.DateTimeField(blank=True, null=True)     # ← НОВОЕ
+    registration_source = models.CharField(                       # ← НОВОЕ
+        max_length=50,
+        default='local',
+        choices=[
+            ('local', 'Local'),
+            ('google', 'Google'),
+            ('facebook', 'Facebook'),
+        ]
+    )
+
 
     objects = CustomUserManager()
 

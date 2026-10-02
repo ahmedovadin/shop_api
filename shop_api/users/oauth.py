@@ -48,14 +48,24 @@ class GoogleLoginAPIView(CreateAPIView):
         print("user_info", user_info)
 
         email = user_info["email"]
+        given_name = user_info.get("given_name", "")
+        family_name = user_info.get("family_name", "")
 
         user, _ = CustomUser.objects.get_or_create(
+            first_name=given_name,
+            last_name=family_name,
             email=email,
+            is_active=True,
+            registration_source='google'
         )
 
+        user.last_login = timezone.now()
+        user.save()
+ 
         refresh = RefreshToken.for_user(user)
         refresh["email"] = email
         refresh["is_staff"] = False
+
 
         return Response(
             {"access_token": str(refresh.access_token), "refresh_token": str(refresh)},
