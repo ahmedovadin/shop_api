@@ -6,6 +6,9 @@ from phonenumber_field.serializerfields import PhoneNumberField
 from users.models import CustomUser
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+class OauthCodeSerializer(serializers.Serializer):
+    code = serializers.CharField()
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
