@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from .serializers import (
     UserRegisterSerializer, 
     AuthValidateSerializer,
@@ -73,6 +74,7 @@ class RegistrationAPIView(CreateAPIView):
         )
 
         code = generate_code()
+        cache.set(f"confirmation_code:{email}", code, 300)
         ConfirmationCode.objects.create(user=user, code=code)
 
         return Response(
@@ -93,18 +95,34 @@ class ConfirmUserAPIView(CreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         code = serializer.validated_data['code']
+        email = serializer.validated_data['email']
 
-        try:
-            confirmation = ConfirmationCode.objects.get(code=code)
-        except ConfirmationCode.DoesNotExist:
+        confirmation_code = cache.get(f"confirmation_code:{email}")
+
+        if not confirmation_code:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={'error': 'Код подтверждения не найден или истёк'}
+            )
+
+        if confirmation_code != code:
             return Response(
                 status=status.HTTP_400_BAD_REQUEST,
                 data={'error': 'Неверный код подтверждения'}
             )
 
-        user = confirmation.user
+        try:
+             user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={'error': 'Пользователь не найден'}
+            )
+
         user.is_active = True
         user.save()
+
+        cache.delete(f"confirmation_code:{email}")
 
         return Response(
             status=status.HTTP_200_OK,

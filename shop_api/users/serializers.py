@@ -44,4 +44,5 @@ class AuthValidateSerializer(UserBaseSerializer):
     pass
 
 class ConfirmationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
     code = serializers.CharField(max_length=6, min_length=6)

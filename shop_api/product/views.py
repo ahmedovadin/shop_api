@@ -1,6 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from django.core.cache import cache
 
 from common.permissions import IsAuth, IsAnon, CanEditWithIn15Minutes, IsModerator
 from common.validators import validate_user_age
@@ -74,8 +75,22 @@ class ProductListCreateAPIView(ListCreateAPIView):
             owner_id=request.auth.get("user_id")
         )
 
+        cache.delete("product_list")
+
         return Response(data=ProductSerializer(product).data,
                         status=status.HTTP_201_CREATED)
+
+    def get(self, request, *args, **kwargs):
+        # from django.core.cache import cache
+        cached_data = cache.get("product_list")
+        if cached_data:
+            print("REDIS")
+            return Response(data=cached_data, status=status.HTTP_200_OK)
+        response = super().get(self, request, *args, **kwargs)
+        if response.data.get("total", 0) > 0:
+            print("POSTGRES")
+            cache.set("product_list", response.data, 300)
+        return response
 
 class ProductDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.select_related('category').all()
