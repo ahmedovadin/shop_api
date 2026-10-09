@@ -77,6 +77,9 @@ class RegistrationAPIView(CreateAPIView):
         cache.set(f"confirmation_code:{email}", code, 300)
         ConfirmationCode.objects.create(user=user, code=code)
 
+        from users.tasks import send_otp_mail
+        send_otp_mail.delay(email, code)
+
         return Response(
             status=status.HTTP_201_CREATED,
             data={
