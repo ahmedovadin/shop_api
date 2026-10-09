@@ -15,6 +15,7 @@ from django.contrib.auth import authenticate
 import random
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
+from users.tasks import send_otp_mail, send_welcome_mail
 
 
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -77,7 +78,7 @@ class RegistrationAPIView(CreateAPIView):
         cache.set(f"confirmation_code:{email}", code, 300)
         ConfirmationCode.objects.create(user=user, code=code)
 
-        from users.tasks import send_otp_mail
+        
         send_otp_mail.delay(email, code)
 
         return Response(
@@ -126,6 +127,9 @@ class ConfirmUserAPIView(CreateAPIView):
         user.save()
 
         cache.delete(f"confirmation_code:{email}")
+
+        # Отправляем приветственное письмо
+        send_welcome_mail.delay(user.email)
 
         return Response(
             status=status.HTTP_200_OK,

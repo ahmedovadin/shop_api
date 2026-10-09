@@ -5,6 +5,7 @@ from django.core.cache import cache
 
 from common.permissions import IsAuth, IsAnon, CanEditWithIn15Minutes, IsModerator
 from common.validators import validate_user_age
+from product.tasks import log_new_product
 from .models import Category, Product, Review
 from django.forms import model_to_dict
 from .serializers import (
@@ -76,6 +77,7 @@ class ProductListCreateAPIView(ListCreateAPIView):
         )
 
         cache.delete("product_list")
+        log_new_product.delay(product.id, product.title)
 
         return Response(data=ProductSerializer(product).data,
                         status=status.HTTP_201_CREATED)
